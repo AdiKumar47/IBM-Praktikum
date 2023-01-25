@@ -3,10 +3,15 @@
 import json
 from flask import Flask, request, jsonify
 import random
+import time
+import asyncio
+
 app = Flask(__name__)
 
 nutzer = 0
 count = {}
+global newKey
+newkey = ""
 
 api = 0
 
@@ -29,11 +34,12 @@ limitTot = 28
   
 
 def main():
-    
+    global newKey
 
     requestValue()
 
-    process()
+    processApi()
+    refresh()
 
     userRateLimiting()
 
@@ -45,10 +51,25 @@ def main():
     if count[newKey] > 30:
         return jsonify("Error-too many request")
             
-    return jsonify('api: ',api,'limit1:', limit1,'limit2: ', limit2,'limit3: ', limit3,'limitTot:', limitTot, 'Request value: ', requestVal, 'Your Token:', newKey, 'Limit-User', count[newKey])
+    return jsonify('api: ',
+    api,
+    'limit1:',
+    limit1,
+    'limit2: ',
+    limit2,
+    'limit3: ',
+    limit3,
+    'limitTot:',
+    limitTot, 
+    'Request value: ', 
+    requestVal, 
+    'Your Token:', 
+    'newKey', 
+    'Limit-User', 
+    'count[newKey]')
 
 
-def process():
+def processApi():
     global api
     global limitTot
     global limit1
@@ -56,6 +77,7 @@ def process():
     global limit3
     global redirections
     global requestVal
+    global newKey
 
     api = random.randint(1,3)
     x=0
@@ -82,6 +104,7 @@ def process():
             if api==3:
                 api = random.randint(1,2)
             redirections=redirections+1
+   
     if api == 1:
         limit1 = x
 
@@ -97,7 +120,7 @@ def requestValue():
     if (request.method == 'PUT' or request.method == 'POST'):
         requestVal=requestVal*2
 
-def userRateLimiting():
+async def userRateLimiting():
     global newKey
     data = request.json
     newKey = data['token']
@@ -109,5 +132,17 @@ def userRateLimiting():
         count[newKey] = 1
     print(data)
     
-    
-app.run(debug=True)   
+
+async def refresh():
+    time.sleep(3)
+    if limit1 < 10:
+        limit1 = limit1+1
+    if limit2 < 10:
+       limit2 = limit2+1
+    if limit3 < 10:
+       limit3 = limit3+1
+    if limitTot < 28:
+       limitTot = limitTot+3
+
+
+app.run(debug=True) 
