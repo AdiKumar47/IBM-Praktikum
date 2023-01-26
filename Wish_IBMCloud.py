@@ -1,7 +1,8 @@
 import json
 from flask import Flask, request, jsonify
 import random
-import asyncio
+from threading import Thread
+import time
 app = Flask(__name__)
 
 
@@ -15,53 +16,41 @@ redirections = 0
 requestVal = 0
 limVal=10
 
-limits = {'lim1': limVal, 'lim2': limVal, 'lim3': limVal, 'limTot': 28}
-
-async def increaseLimit():
-    while True:
-        if limits['lim1']<10:
-            limits['lim1'] = limits['lim1']+1
-        if limits['lim2']<10:
-            limits['lim2'] = limits['lim2']+1
-        if limits['lim3']<10:
-            limits['lim3'] = limits['lim3']+1
-        if limits['limTot']<10:
-            limits['limTot'] = limits['limTot']+1
-        if newKey in limits.keys():
-            if limits[newKey]<30:
-                limits[newKey] = limits[newKey]+1
-        await asyncio.sleep(2)
+jsonFile = open('C:/Data1.json')
+fileData = json.load(jsonFile)
+config = fileData
+print(config)
 
 @app.route('/jobs', methods=['GET', 'PUT', 'POST', 'DELETE'])
 def mainJobs():
-        global requestVal
-        global path
-        requestValue(2)
-        process()
-        userRateLimiting()
-        path='Jobs'
-        if redirections == 3:
-            return jsonify("Error-Request to big")
-                
-    #    if limit1 <= 0 or limit2 <= 0 or limit3 <= 0 or limitTot <= 0 :
-    #        return jsonify('Error-Limit has been reached')
-        if limits[newKey] > 30:
-            return jsonify("Error-too many request")
-        return jsonify({'api: ': api,
-        'limit1:': limits['lim1'],
-        'limit2: ': limits['lim2'],
-        'limit3: ': limits['lim3'],
-        'limitTot:': limits['limTot'], 
-        'Request value: ': requestVal, 
-        'Your Token:': newKey, 
-        'Limit-User': limits[newKey],
-        'Path': path })
-
+    global requestVal
+    global path
+    requestValue(config['reqValJobs'])
+    process()
+    userRateLimiting()
+    path='Jobs'
+    if redirections == 3:
+        return jsonify("Error-Request to big")
+               
+#    if limit1 <= 0 or limit2 <= 0 or limit3 <= 0 or limitTot <= 0 :
+#        return jsonify('Error-Limit has been reached')
+    if config[newKey] <= 0:
+        return jsonify("Error-too many request")
+    return jsonify({'api: ': api,
+    'limit1:': config['lim1'],
+    'limit2: ': config['lim2'],
+    'limit3: ': config['lim3'],
+    'limitTot:': config['limTot'], 
+    'Request value: ': requestVal, 
+    'Your Token:': newKey, 
+    'Limit-User': config[newKey],
+    'Path': path })
+    
 @app.route('/apps', methods=['GET', 'PUT', 'POST', 'DELETE'])
 def mainApps():
     global requestVal
     global path
-    requestValue(1)
+    requestValue(config['reqValApps'])
     process()
     userRateLimiting()
     path='Apps'
@@ -70,23 +59,23 @@ def mainApps():
                
 #    if limit1 <= 0 or limit2 <= 0 or limit3 <= 0 or limitTot <= 0 :
 #        return jsonify('Error-Limit has been reached')
-    if limits[newKey] > 30:
+    if config[newKey] <= 0:
         return jsonify("Error-too many request")
     return jsonify({'api: ': api,
-    'limit1:': limits['lim1'],
-    'limit2: ': limits['lim2'],
-    'limit3: ': limits['lim3'],
-    'limitTot:': limits['limTot'], 
+    'limit1:': config['lim1'],
+    'limit2: ': config['lim2'],
+    'limit3: ': config['lim3'],
+    'limitTot:': config['limTot'], 
     'Request value: ': requestVal, 
     'Your Token:': newKey, 
-    'Limit-User': limits[newKey],
+    'Limit-User': config[newKey],
     'Path': path })
 
 @app.route('/project', methods=['GET', 'PUT', 'POST', 'DELETE'])
 def mainProject():
     global requestVal
     global path
-    requestValue(3)
+    requestValue(config['reqValProjects'])
     process()
     userRateLimiting()
     path = 'Projects'
@@ -95,43 +84,48 @@ def mainProject():
                
 #    if limit1 <= 0 or limit2 <= 0 or limit3 <= 0 or limitTot <= 0 :
 #        return jsonify('Error-Limit has been reached')
-    if limits[newKey] <= 0:
+    if config[newKey] <= 0:
         return jsonify("Error-too many request")
 
     return jsonify({'api: ': api,
-    'limit1:': limits['lim1'],
-    'limit2: ': limits['lim2'],
-    'limit3: ': limits['lim3'],
-    'limitTot:': limits['limTot'], 
+    'limit1:': config['lim1'],
+    'limit2: ': config['lim2'],
+    'limit3: ': config['lim3'],
+    'limitTot:': config['limTot'], 
     'Request value: ': requestVal, 
     'Your Token:': newKey, 
-    'Limit-User': limits[newKey],
+    'Limit-User': config[newKey],
     'Path': path })
 
 @app.route('/reset', methods=['GET', 'PUT', 'POST', 'DELETE'])
 def reset():
-    global limits
-    global limits
+    global config
+    global config
     path = 'reset'
-    limits = {'lim1': limVal, 'lim2': limVal, 'lim3': limVal, 'limTot': 28}
-    limits = {}
+    config = {'lim1': limVal, 'lim2': limVal, 'lim3': limVal, 'limTot': 28}
+    config = {}
     return jsonify({'api: ': api,
-    'limit1:': limits['lim1'],
-    'limit2: ': limits['lim2'],
-    'limit3: ': limits['lim3'],
-    'limitTot:': limits['limTot'], 
+    'limit1:': config['lim1'],
+    'limit2: ': config['lim2'],
+    'limit3: ': config['lim3'],
+    'limitTot:': config['limTot'], 
     'Request value: ': requestVal, 
     'Your Token:': newKey, 
-    'Limit-User': limits[newKey],
+    'Limit-User': config[newKey],
     'Path': path,})
 
 
 def requestValue(x):
     global requestVal
-    if (request.method == 'GET' or request.method == 'DELETE'):
-        requestVal=1
-    if (request.method == 'PUT' or request.method == 'POST'):
-        requestVal=2
+    if (request.method == 'GET' ):
+        requestVal = config['reqValGet']
+    if (request.method == 'DELETE'):
+        requestVal= config['reqValDel']
+    if (request.method == 'PUT'):  
+        requestVal= config['reqValPut']
+    if (request.method == 'POST'):
+        requestVal=config['reqValPost']
+
     requestVal=requestVal*x
 
 def process():
@@ -143,20 +137,22 @@ def process():
     x=0
 
     if api == 1:
-        x = limits['lim1']
+        x = config['lim1']
 
     if api == 2:
-        x = limits['lim2']
+        x = config['lim2']
 
     if api == 3:
-        x = limits['lim3']
+        x = config['lim3']
 
-    if x-requestVal >= 0:
-        x=x-requestVal
-        limits['limTot']=limits['limTot']-requestVal
+    if x - int(requestVal) >= 0:
+        print(x)
+        print(requestVal)
+        x= x- int(requestVal)
+        config['limTot']=config['limTot']-requestVal
         redirections=0
     else:
-        if limits['limTot'] > 0:
+        if config['limTot'] > 0:
             if api==1:
                 api = random.randint(2,3)
             if api==2:
@@ -165,13 +161,13 @@ def process():
                 api = random.randint(1,2)
             redirections=redirections+1
     if api == 1:
-        limits['lim1'] = x
+        config['lim1'] = x
 
     if api == 2:
-         limits['lim2'] = x
+         config['lim2'] = x
 
     if api == 3:
-        limits['lim3'] = x
+        config['lim3'] = x
 
 def userRateLimiting():
     global newKey
@@ -179,28 +175,30 @@ def userRateLimiting():
     newKey = data['token']
     print(newKey)
     print(type(newKey))
-    if newKey in limits.keys():
-        limits[newKey] = limits[newKey]-requestVal
+    if newKey in config.keys():
+        config[newKey] = config[newKey]-requestVal
     else:
-        limits[newKey] = 30
+        config[newKey] = config['limMaxUser']-1
     print(data)
 
-async def increaseLimit():
+def increaseLimit():
     while True:
-        if limits['lim1']<10:
-            limits['lim1'] = limits['lim1']+1
-        if limits['lim2']<10:
-            limits['lim2'] = limits['lim2']+1
-        if limits['lim3']<10:
-            limits['lim3'] = limits['lim3']+1
-        if limits['limTot']<10:
-            limits['limTot'] = limits['limTot']+1
-        if newKey in limits.keys():
-            if limits[newKey]<30:
-                limits[newKey] = limits[newKey]+1
-        await asyncio.sleep(2)
+        if config['lim1']<10:
+            config['lim1'] = config['lim1']+1
+        if config['lim2']<10:
+            config['lim2'] = config['lim2']+1
+        if config['lim3']<10:
+            config['lim3'] = config['lim3']+1
+        if config['limTot']<28:
+            config['limTot'] = config['limTot']+3
+        if newKey in config.keys():
+            if config[newKey]<config['limMaxUser']:
+                config[newKey] = config[newKey]+3
+        time.sleep(config['regTime'])
 
 
-
-
-app.run(debug=True) 
+if __name__ == '__main__':
+    thread  = Thread(target=increaseLimit)
+    thread.daemon = True
+    thread.start()
+    app.run(debug=True) 
