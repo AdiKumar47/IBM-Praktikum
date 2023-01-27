@@ -1,0 +1,18 @@
+{
+    "lim1" : 10, 
+    "lim2": 10, 
+    "lim3": 10, 
+    "limTot": 28, 
+    "limMaxUser":30,
+    "regTime": 4,
+    "reqValDel": 1,
+    "reqValGet": 1,
+    "reqValPost": 2,
+    "reqValPut":2,
+    "reqValJobs": 2,
+    "reqValProjects": 3,
+    "reqValApps": 1 
+}
+
+
+
